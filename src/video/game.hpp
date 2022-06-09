@@ -19,8 +19,8 @@ public:
 	SDL_Renderer* getGameRenderer() const;
 
 private:
-	static const uint16_t kWindowHeight = 1280u;
-	static const uint16_t kWindowWidth = 960u;
+	static const int16_t kWindowHeight = 1280;
+	static const int16_t kWindowWidth = 960;
 
 	SDL_Window* mWindow;
 	SDL_Renderer* mRenderer;
