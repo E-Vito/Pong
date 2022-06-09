@@ -12,6 +12,8 @@ public:
 
 	bool init();
 	void quit();
+	void render();
+
 
 	SDL_Window* getGameWindow() const;
 	SDL_Renderer* getGameRenderer() const;

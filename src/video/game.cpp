@@ -75,6 +75,11 @@ void Game::quit()
 	SDL_Quit();
 }
 
+void Game::render()
+{
+	SDL_RenderPresent(mRenderer);
+}
+
 SDL_Window* Game::getGameWindow() const
 {
 	return mWindow;
