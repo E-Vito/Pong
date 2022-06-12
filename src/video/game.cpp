@@ -1,46 +1,54 @@
+#include <stdexcept>
+#include <sstream>
+#include <iostream>
 #include <SDL.h>
 
 #include "game.hpp"
 
-Game::Game(const std::string& title) : kTitle(title), mWindow(nullptr), mRenderer(nullptr) {}
+Game::Game() :
+	mWindow(nullptr),
+	mRenderer(nullptr),
+	mGameIsRunning(false)
+{}
 
 Game::~Game()
 {
-	quit();
+	close();
 }
 
-bool Game::init()
+void Game::init(const std::string& title, int w, int h, int x, int y)
 {
-	bool initSuccess = true;
+	std::ostringstream errorMsg;
 	//Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		printf("SDL could not initialize! Error: %s\n", SDL_GetError());
-		initSuccess = false;
+		//printf("SDL could not initialize! Error: %s\n", SDL_GetError());
+		errorMsg << "SDL could not initialize! Error: " << SDL_GetError() << "\n";
+		throw std::runtime_error(errorMsg.str());
 	}
 	else
 	{
-		//Set texture filtering to linear
-		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
+		//try creating the window
+		mWindow = SDL_CreateWindow(title.c_str(), x, y, w, h, SDL_WINDOW_SHOWN);
+		if (mWindow != nullptr)
 		{
-			printf("SDL did not set hint. Linear texture filtering not enabled!\n");
-		}
-		//Create game window
-		mWindow = SDL_CreateWindow(kTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-								   kWindowWidth, kWindowHeight, SDL_WINDOW_SHOWN);
-		if (mWindow == nullptr)
-		{
-			printf("SDL could not create window! Error: %s\n", SDL_GetError());
-			initSuccess = false;
+			//printf("SDL could not create window! Error: %s\n", SDL_GetError());
+			errorMsg << "SDL could not create window! Error: " << SDL_GetError() << "\n";
+			throw std::runtime_error(errorMsg.str());
 		}
 		else
 		{
-			//Create game window rendering context
+			if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
+			{
+				printf("SDL could not set texture filtering!\n");
+			}
+			//try creating the window's rendering context
 			mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 			if (mRenderer == nullptr)
 			{
-				printf("SDL could not create renderer! Error: %s\n", SDL_GetError());
-				initSuccess = false;
+				//printf("SDL could not create renderer! Error: %s\n", SDL_GetError());
+				errorMsg << "SDL could not create renderer! Error:" << SDL_GetError() << "\n";
+				throw std::runtime_error(errorMsg.str());
 			}
 			else
 			{
@@ -55,11 +63,11 @@ bool Game::init()
 			}
 		}
 	}
-	return initSuccess;
+	std::cout << "Game initialized successfully" << std::endl;
 }
 
 //Cleanup all resources used by the game and shutdown SDL's functions
-void Game::quit()
+void Game::close()
 {
 	//free game textures
 
@@ -68,24 +76,39 @@ void Game::quit()
 	//free window/renderer
 	SDL_DestroyRenderer(mRenderer);
 	SDL_DestroyWindow(mWindow);
-	mRenderer = nullptr;
-	mWindow = nullptr;
 
 	//quit SDL subsystems
 	SDL_Quit();
 }
 
-void Game::render()
+void Game::handleEvents()
 {
-	SDL_RenderPresent(mRenderer);
+
 }
 
-SDL_Window* Game::getGameWindow() const
+void Game::gameLoop()
 {
-	return mWindow;
+	SDL_Event e;
+	mGameIsRunning = true;
+
+	while (mGameIsRunning)
+	{
+		while (SDL_PollEvent(&e))
+		{
+			if (e.type == SDL_QUIT)
+			{
+				endGameLoop();
+			}
+		}
+	}
 }
 
-SDL_Renderer* Game::getGameRenderer() const
+void Game::endGameLoop()
+{
+	mGameIsRunning = false;
+}
+
+SDL_Renderer* Game::getRenderer() const
 {
 	return mRenderer;
 }

@@ -6,23 +6,19 @@
 class Game
 {
 public:
-	Game() = delete;
-	Game(const std::string& title);
+	Game();
 	~Game();
 
-	bool init();
-	void quit();
-	void render();
+	void init(const std::string& title, int w, int h, int x, int y);
+	void close();
 
+	void handleEvents();
+	void gameLoop();
+	void endGameLoop();
 
-	SDL_Window* getGameWindow() const;
-	SDL_Renderer* getGameRenderer() const;
-
+	SDL_Renderer* getRenderer() const;
 private:
-	static const int16_t kWindowHeight = 1280;
-	static const int16_t kWindowWidth = 960;
-
 	SDL_Window* mWindow;
 	SDL_Renderer* mRenderer;
-	const std::string kTitle;
+	bool mGameIsRunning;
 };
